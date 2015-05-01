@@ -1,4 +1,6 @@
-package com.nyu.etatripmanager;
+package com.nyu.etatripmanager.ctrl;
+
+import com.nyu.etatripmanager.R;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
