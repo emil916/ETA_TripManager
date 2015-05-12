@@ -172,7 +172,7 @@ public class CreateTripActivity extends Activity {
 		Intent i = new Intent(Intent.ACTION_PICK,
 				ContactsContract.Contacts.CONTENT_URI);
 		// ContactsContract.Contacts.CONTENT_URI = "content://contacts"
-		i.setType(Phone.CONTENT_TYPE); // Show user only contacts w/ phone numbers
+		i.setType(ContactsContract.CommonDataKinds.Email.CONTENT_TYPE); // Show user only contacts w/ email id
 		startActivityForResult(i, PICK_CONTACT_REQUEST);
 	}
 
