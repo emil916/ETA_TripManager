@@ -21,7 +21,7 @@ public class HttpRequestHelper {
     public final static int GET = 1;
     public final static int POST = 2;
     
-    public static final String URL = "http://cs9033-homework.appspot.com/";
+    public static final String URL = "http://meetingmanager-env.elasticbeanstalk.com/JSONServlet";
     
     public static final String JSON_CREATE_TRIP = "CREATE_TRIP";
     public static final String JSON_UPDATE_LOCATION = "UPDATE_LOCATION";

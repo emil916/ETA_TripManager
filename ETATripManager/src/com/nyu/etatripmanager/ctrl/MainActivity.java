@@ -36,6 +36,7 @@ import android.widget.Toast;
 
 import com.nyu.etatripmanager.R;
 import com.nyu.etatripmanager.login.SessionActivity;
+import com.nyu.etatripmanager.models.Person;
 import com.nyu.etatripmanager.models.Trip;
 
 public class MainActivity extends ActionBarActivity implements
@@ -62,7 +63,7 @@ public class MainActivity extends ActionBarActivity implements
 	private final int CreateTripRequest = 1;
 	private final int ViewTripRequest = 2;
 	private final int SessionActRequest = 3;
-	private final int RESULT_LOGGED_OUT = 100;
+	public static final int RESULT_LOGGED_OUT = 100;
 	private final int REFRESH_INTERVAL = 10*000; // 10sec
 	Trip active_trip = null;
 	AsyncTask<String, Void, String[]> asyncTask;
@@ -285,9 +286,9 @@ public class MainActivity extends ActionBarActivity implements
 	@Override
 	public void onResume() {
 		super.onResume();
-		long trip_id = SharedPreferenceHelper.readLong(
-				MainActivity.this, SharedPreferenceHelper.ACTIVE_TRIP_ID, -1);
-		if (trip_id < 0) {
+		String trip_id = SharedPreferenceHelper.readString(
+				MainActivity.this, SharedPreferenceHelper.ACTIVE_TRIP_ID, null);
+		if (trip_id == null) {
 			handler.removeCallbacks(runnable);
 			tv_activeTripInfo.setText("No active trip");
 			tv_lat.setText("");
@@ -333,11 +334,11 @@ private class PostToServerTask extends AsyncTask <String, Void, String[]>{
 					jsonUpdateLocationObj.put("longitude", long_info);
 					jsonUpdateLocationObj.put("datetime",System.currentTimeMillis());
 					
-					if(isArrived = SharedPreferenceHelper.readBoolean(
-						MainActivity.this, SharedPreferenceHelper.I_ARRIVED, false)) {
-						jsonUpdateLocationObj.put("latitude", active_trip.getLocation()[2]);
-						jsonUpdateLocationObj.put("longitude", active_trip.getLocation()[3]);
-					}
+//					if(isArrived = SharedPreferenceHelper.readBoolean(
+//						MainActivity.this, SharedPreferenceHelper.I_ARRIVED, false)) {
+//						jsonUpdateLocationObj.put("latitude", active_trip.getLocation()[2]);
+//						jsonUpdateLocationObj.put("longitude", active_trip.getLocation()[3]);
+//					}
 					jsonUpdateLocationResultStr = HttpRequestHelper
 							.makeServiceCall(HttpRequestHelper.URL,	HttpRequestHelper.POST,
 									jsonUpdateLocationObj);
@@ -363,18 +364,37 @@ private class PostToServerTask extends AsyncTask <String, Void, String[]>{
 
 					if (jsonTripStatusResultObj.has("people")) {
 						JSONArray j_people_arr = jsonTripStatusResultObj.getJSONArray("people");
-						JSONArray j_distance_arr = jsonTripStatusResultObj.getJSONArray("distance_left");
-						JSONArray j_time_arr = jsonTripStatusResultObj.getJSONArray("time_left");
+						int suggested_time = jsonTripStatusResultObj.getInt("suggested_time_to_leave");
+						
+						
 						
 						StringBuilder sb = new StringBuilder();
 						sb.append("Active trip: ").append(active_trip.getName())
 						.append("\n Location: ").append(active_trip.getLocation()[0]);
 						
+						TripDatabaseHelper trip_db = new TripDatabaseHelper(MainActivity.this);
+						
+
+						
+						
 						for (int i=0; i<j_people_arr.length(); i++) {
-							sb.append("\n" + Integer.toString(i+1)+". Guest name: " 
-							+ j_people_arr.get(i).toString())
-							.append("\n   - Distance left: " + Double.toString(j_distance_arr.getDouble(i)) + "mls.")
-							.append("\n   - Time left: " + Long.toString(j_time_arr.getLong(i)/60) + "min.");
+							JSONObject j_person = (JSONObject)j_people_arr.get(i);
+							String email = j_person.getString("email");
+							Double distance_left = j_person.getDouble("distance_left");
+							Double lat = j_person.getDouble("latitude");
+							Double lng = j_person.getDouble("longitude");
+							int time_left = j_person.getInt("time_left");
+							long timestamp = j_person.getLong("datetime");
+							
+							Person person = trip_db.getPerson(active_trip.getId(), email);
+							if(person == null)
+								person = new Person("Not found", email);
+							
+							sb.append("\n" + Integer.toString(i+1)+". Guest name: " + person.getName())
+							.append("\n   - Guest email: " + person.getEmail())
+							.append("\n   - Distance left: " + distance_left + "mls.")
+							.append("\n   - Time left: " + time_left + "min.")
+							.append("\n   - Suggested time to leave: after " + suggested_time + "min.");
 						}
 						
 						if (!isArrived) {
@@ -392,6 +412,8 @@ private class PostToServerTask extends AsyncTask <String, Void, String[]>{
 						}
 						
 						tv_activeTripInfo.setText(sb.toString());
+						
+						trip_db.close();
 						
 						handler.postDelayed(runnable, REFRESH_INTERVAL); 
 						
@@ -533,6 +555,7 @@ private class PostToServerTask extends AsyncTask <String, Void, String[]>{
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	public void restoreActionBar() {
 		ActionBar actionBar = getSupportActionBar();
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);

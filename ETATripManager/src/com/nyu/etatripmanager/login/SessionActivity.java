@@ -127,8 +127,7 @@ public class SessionActivity extends Activity implements OnClickListener,
                 // errors until the user is signed in, or they cancel.
                 resolveSignInError();
             } else {
-            	// Update the UI
-            	
+            	finishSession();
             }
         }
         
@@ -205,8 +204,7 @@ public class SessionActivity extends Activity implements OnClickListener,
     @Override
     public void onConnectionSuspended(int arg0) {
         mGoogleApiClient.connect();
-        startLoginActivity();
-        finish();
+        finishSession();
     }
  
 
@@ -236,8 +234,7 @@ public class SessionActivity extends Activity implements OnClickListener,
             Plus.AccountApi.clearDefaultAccount(mGoogleApiClient);
             mGoogleApiClient.disconnect();
             mGoogleApiClient.connect();
-            startLoginActivity();
-            finish();
+//          finishSession(); // No need, because we do it in onConnectionFailed()
         }
     }
  
@@ -253,8 +250,7 @@ public class SessionActivity extends Activity implements OnClickListener,
                         public void onResult(Status arg0) {
                             Log.e(TAG, "User access revoked!");
                             mGoogleApiClient.connect();
-                            startLoginActivity();
-                            finish();
+                            finishSession();
                         }
  
                     });
@@ -289,9 +285,8 @@ public class SessionActivity extends Activity implements OnClickListener,
         }
     }
  
-    private void startLoginActivity() {
-//    	Intent intent = new Intent(this, LoginActivity.class);
-//		startActivity(intent);
-    	setResult(100);
+    private void finishSession() {
+    	setResult(MainActivity.RESULT_LOGGED_OUT);
+        finish();
     }
 }

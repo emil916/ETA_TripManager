@@ -43,7 +43,7 @@
             android:layout_alignLeft="@+id/textView4"
             android:layout_below="@+id/textView4"
             android:ems="10"
-            android:hint="@string/hint_trip_name" />
+            android:hint="@string/hint_trip_name"/>
 
         <TextView
             android:id="@+id/textView5"
@@ -62,7 +62,7 @@
             android:layout_alignLeft="@+id/textView5"
             android:layout_below="@+id/textView5"
             android:ems="10"
-            android:hint="@string/hint_trip_loc"/>
+            android:hint="@string/hint_trip_loc" />
 
         <EditText
             android:id="@+id/editText_tripLocType"
@@ -71,7 +71,7 @@
             android:layout_alignLeft="@+id/textView5"
             android:layout_below="@+id/editText_tripLoc"
             android:ems="10"
-            android:hint="@string/hint_trip_loc_type" />
+            android:hint="@string/hint_trip_loc_type"/>
 
         <Button
             android:id="@+id/button_ct_searchLoc"

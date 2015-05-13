@@ -28,6 +28,7 @@
     <string name="hint_trip_loc_type">Type: e.g. Cheese</string>
     <string name="no_guest">No guest</string>
     <string name="title_activity_login">LoginActivity</string>
+    <string name="tv_please_sign_in">Please sign in</string>
     
     <!-- Button text -->
     <string name="btn_logout_from_google">Logout from Google</string>

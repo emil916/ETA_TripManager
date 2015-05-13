@@ -46,13 +46,13 @@ public class ViewTripActivity extends Activity {
 		cur_trip = getTrip(getIntent());
 		viewTrip(cur_trip);
 		
-		long trip_id = SharedPreferenceHelper.readLong(
-				ViewTripActivity.this, SharedPreferenceHelper.ACTIVE_TRIP_ID, -1);
+		String trip_id = SharedPreferenceHelper.readString(
+				ViewTripActivity.this, SharedPreferenceHelper.ACTIVE_TRIP_ID, null);
 		boolean isArrived = SharedPreferenceHelper.readBoolean(
 				ViewTripActivity.this, SharedPreferenceHelper.I_ARRIVED, false);
 				
 		
-		if(trip_id == cur_trip.getId()){
+		if(trip_id.equals(cur_trip.getId())){
 			btn_startTrip.setEnabled(false);
 			btn_stopTrip.setEnabled(true);
 			
@@ -76,7 +76,7 @@ public class ViewTripActivity extends Activity {
 					btn_arrived.setEnabled(true);
 					btn_stopTrip.setEnabled(true);
 					
-					SharedPreferenceHelper.writeLong(ViewTripActivity.this, 
+					SharedPreferenceHelper.writeString(ViewTripActivity.this, 
 							SharedPreferenceHelper.ACTIVE_TRIP_ID, cur_trip.getId());
 				} else
 					Toast.makeText(ViewTripActivity.this, 
@@ -146,7 +146,7 @@ public class ViewTripActivity extends Activity {
 		Person [] ppl = trip.getGuests();
 		for (Person person : ppl) {
 			tv_ppl.append(person.getName()+"\n");
-			tv_ppl.append(person.getPhone()+"\n");
+			tv_ppl.append(person.getEmail()+"\n");
 		}
 	}
 }

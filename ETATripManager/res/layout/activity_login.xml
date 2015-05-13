@@ -2,16 +2,26 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_marginBottom="20dp"
+    android:gravity="center_vertical"
     android:orientation="vertical"
     android:padding="16dp"
     tools:context="com.nyu.etatripmanager.login.LoginActivity" >
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginBottom="50dp"
+        android:text="@string/tv_please_sign_in"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
  
     <com.google.android.gms.common.SignInButton
         android:id="@+id/btn_sign_in"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="20dp"
-        android:visibility="invisible"/>
- 
+        android:visibility="invisible" />
  
 </LinearLayout>

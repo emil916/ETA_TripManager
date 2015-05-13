@@ -17,8 +17,9 @@ public class Trip implements Parcelable {
 	
 	// Member fields should exist here, what else do you need for a trip?
 	// Please add additional fields
-	private long id;			// Trip ID
+	private String id;			// Trip ID
 	private String name;		// Trip name
+	private String trip_creator; // Trip creator email
 	private String[] location;	// Trip location {loc name, address, lat, long}
 	private long date;			// Trip date
 	private Person[] guests;	// Trip guests
@@ -45,8 +46,9 @@ public class Trip implements Parcelable {
 	 * Model fields.
 	 */
 	public Trip(Parcel p) {
-		id = p.readLong();
+		id = p.readString();
 		name = p.readString();
+		trip_creator = p.readString();
 		location = new String[4];
 		p.readStringArray(location);
 		date = p.readLong();
@@ -59,9 +61,11 @@ public class Trip implements Parcelable {
 	 * @param name  Add arbitrary number of arguments to
 	 * instantiate Trip class based on member variables.
 	 */
-	public Trip(long Id, String Name, String[] Loc, long DAte, Person [] Guests) {
+	public Trip(String Id, String Name, String TripCreator, String[] Loc, 
+			long DAte, Person [] Guests) {
 		this.id = Id;
 		this.name = Name;
+		this.trip_creator = TripCreator;
 		this.location = Loc;
 		this.date = DAte;
 		this.guests = Guests;
@@ -82,21 +86,23 @@ public class Trip implements Parcelable {
 	 */
 	@Override
 	public void writeToParcel(Parcel dest, int flags) {
-		dest.writeLong(id);
+		dest.writeString(id);
 		dest.writeString(name);
+		dest.writeString(trip_creator);
 		dest.writeStringArray(location);
 		dest.writeLong(date);
 		dest.writeTypedArray(guests, 0);
 	}
 	
-	public JSONObject toJSON() throws JSONException {/////////////////////////////////////////////////
+	public JSONObject toJSON() throws JSONException {
 		List<String> locList = Arrays.asList(location);
 
         JSONObject json = new JSONObject();
         json.put("command", HttpRequestHelper.JSON_CREATE_TRIP);
+        json.put("email", trip_creator);
         json.put("location", new JSONArray(locList));
         json.put("datetime", date);
-        json.put("people", new JSONArray(getGuestNames()));
+        json.put("people", new JSONArray(getGuestEmails()));
         return json;
     }
 	
@@ -105,14 +111,17 @@ public class Trip implements Parcelable {
 	 */
 	
 	/** Public getters */
-	public long getId() {
+	public String getId() {
 		return id;
 	}
-	public void setId(long Id) {
+	public void setId(String Id) {
 		this.id = Id;
 	}
 	public String getName() {
 		return name;
+	}
+	public String getTripCreator() {
+		return trip_creator;
 	}
 	public String[] getLocation() {
 		return location;
@@ -127,6 +136,13 @@ public class Trip implements Parcelable {
 		ArrayList<String> list = new ArrayList<String>();
 		for (Person p : guests)
 			list.add(p.getName());
+		return list;
+	}
+	
+	public ArrayList<String> getGuestEmails() {
+		ArrayList<String> list = new ArrayList<String>();
+		for (Person p : guests)
+			list.add(p.getEmail());
 		return list;
 	}
 	

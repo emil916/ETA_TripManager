@@ -16,12 +16,13 @@ import com.nyu.etatripmanager.models.*;
 
 public class TripDatabaseHelper extends SQLiteOpenHelper {
 
-	private static final int DATABASE_VERSION = 2;
+	private static final int DATABASE_VERSION = 1;
 	private static final String DATABASE_NAME = "trips";
 
 	private static final String TABLE_TRIP = "trip";
 	private static final String COLUMN_TRIP_ID = "_id"; // convention
 	private static final String COLUMN_TRIP_NAME = "t_name";
+	private static final String COLUMN_TRIP_CREATOR = "email";
 	private static final String COLUMN_TRIP_DATE = "date";
 	private static final String COLUMN_TRIP_LOC_NAME = "location";
 	private static final String COLUMN_TRIP_LOC_ADDRESS = "address";
@@ -31,7 +32,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
 	private static final String TABLE_GUEST = "guest";
 	private static final String COLUMN_TRIPID = "trip_id";
 	private static final String COLUMN_NAME = "p_name";
-	private static final String COLUMN_PHONE = "phone";
+	private static final String COLUMN_EMAIL = "p_email";
 
 	/**
 	 * Public constructor
@@ -47,11 +48,12 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
 	public void onCreate(SQLiteDatabase db) {
 		// create trip table
 		db.execSQL("create table " + TABLE_TRIP + "(" 
-				+ COLUMN_TRIP_ID + " integer primary key, " //autoincrement, " 
+				+ COLUMN_TRIP_ID + " varchar(25) primary key, " //autoincrement, " 
 				+ COLUMN_TRIP_NAME + " varchar(50), "
+				+ COLUMN_TRIP_CREATOR + " varchar(50), "
 				+ COLUMN_TRIP_DATE + " bigint, " 
 				+ COLUMN_TRIP_LOC_NAME + " varchar(50), "
-				+ COLUMN_TRIP_LOC_ADDRESS + " varchar(100), " 
+				+ COLUMN_TRIP_LOC_ADDRESS + " varchar(160), " 
 				+ COLUMN_LOC_LAT + " varchar(50), " 
 				+ COLUMN_LOC_LONG + " varchar(50))");
 
@@ -59,7 +61,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
 		db.execSQL("create table " + TABLE_GUEST + "(" 
 				+ COLUMN_TRIPID	+ " integer references trip(_id) ON DELETE CASCADE, " 
 				+ COLUMN_NAME + " varchar(50), " 
-				+ COLUMN_PHONE + " varchar(50))");
+				+ COLUMN_EMAIL + " varchar(50))");
 	}
 
 	@Override
@@ -91,6 +93,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
 		ContentValues cv = new ContentValues();
 		cv.put(COLUMN_TRIP_ID, trip.getId());
 		cv.put(COLUMN_TRIP_NAME, trip.getName());
+		cv.put(COLUMN_TRIP_CREATOR, trip.getTripCreator());
 		cv.put(COLUMN_TRIP_DATE, trip.getDate());
 		cv.put(COLUMN_TRIP_LOC_NAME, trip.getLocation()[0]);
 		cv.put(COLUMN_TRIP_LOC_ADDRESS, trip.getLocation()[1]);
@@ -109,32 +112,60 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
 	 * @return the row ID of the newly inserted row, 
 	 * or -1 if an error occurred 
 	 */
-	public long insertGuest(long tripId, Person person) {
+	public long insertGuest(String tripId, Person person) {
 		ContentValues cv = new ContentValues();
 		cv.put(COLUMN_TRIPID, tripId);
 		cv.put(COLUMN_NAME, person.getName());
-		cv.put(COLUMN_PHONE, person.getPhone());
+		cv.put(COLUMN_EMAIL, person.getEmail());
 
 		// return id of new person
 		return getWritableDatabase().insert(TABLE_GUEST, null, cv);
 	}
 	
-	public Trip getTrip(long trip_id) {	
+	/** Get the person using given trip_id and person's email
+	 * @param trip_id the given trip ID to be queried
+	 * @param email the given person's email address
+	 * @return the requested trip, or null if no such trip exists
+	 * */
+	public Person getPerson(String trip_id, String email) {	
+		Person person = null;
+		
+		SQLiteDatabase db = this.getReadableDatabase();
+	    Cursor cursor = db.rawQuery(
+	    		"select * from " + TABLE_GUEST
+	    		+ " where " + COLUMN_TRIPID + "='" + trip_id + "' AND " +
+	    				COLUMN_EMAIL + "='" + email +"'", null);
+	    
+	    if(cursor.moveToFirst()) {
+	    	String name = cursor.getString(1);
+	    	person = new Person(name, email);
+		}
+		
+		cursor.close();
+		db.close();
+		
+		return person;
+	}
+	
+	/** Get the trip using given trip_id 
+	 * @param trip_id the given trip ID to be queried
+	 * @return the requested trip, or null if no such trip exists
+	 * */
+	public Trip getTrip(String trip_id) {	
 		Trip trip = null;
 		
 		SQLiteDatabase db = this.getReadableDatabase();
 	    Cursor cursor = db.rawQuery(
 	    		"select * from " + TABLE_TRIP
-	    		+ " where " + COLUMN_TRIP_ID + "=" + trip_id, null);
+	    		+ " where " + COLUMN_TRIP_ID + "='" + trip_id + "'", null);
 	    
-	    if(cursor.getCount() > 0) {
-			cursor.moveToFirst();
-			String[] loc_arr = { cursor.getString(3), cursor.getString(4),
-					cursor.getString(5), cursor.getString(6) };
-			Person[] guests_arr = getAllGuestsPerTrip(cursor.getLong(0));
+	    if(cursor.moveToFirst()) {
+			String[] loc_arr = { cursor.getString(4), cursor.getString(5),
+					cursor.getString(6), cursor.getString(7) };
+			Person[] guests_arr = getAllGuestsPerTrip(cursor.getString(0));
 
-			trip = new Trip(cursor.getLong(0), cursor.getString(1), loc_arr,
-					cursor.getLong(2), guests_arr);
+			trip = new Trip(cursor.getString(0), cursor.getString(1), cursor.getString(2), 
+					loc_arr, cursor.getLong(3), guests_arr);
 		}
 		
 		cursor.close();
@@ -142,6 +173,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
 		
 		return trip;
 	}
+	
 	/**
 	 * This method gets all the trips created.
 	 * @return an arraylist of all the created trips
@@ -154,12 +186,12 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
 	 
 	    // loop through all query results
 		for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
-			String[] loc_arr = { cursor.getString(3), cursor.getString(4),
-					cursor.getString(5), cursor.getString(6) };
-			Person[] guests_arr = getAllGuestsPerTrip(cursor.getLong(0));
+			String[] loc_arr = { cursor.getString(4), cursor.getString(5),
+					cursor.getString(6), cursor.getString(7) };
+			Person[] guests_arr = getAllGuestsPerTrip(cursor.getString(0));
 
-			Trip trip = new Trip(cursor.getLong(0), cursor.getString(1), loc_arr,
-					cursor.getLong(2), guests_arr);
+			Trip trip = new Trip(cursor.getString(0), cursor.getString(1), cursor.getString(2),
+					loc_arr, cursor.getLong(3), guests_arr);
 			tripList.add(trip);
 		}
 
@@ -172,12 +204,12 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
 	 * @param tripId the given trip
 	 * @return an array of invited guests
 	 */
-	public Person [] getAllGuestsPerTrip(long tripId) {
+	public Person [] getAllGuestsPerTrip(String tripId) {
 	    List<Person> guests = new ArrayList<Person>();
 	 
 	    SQLiteDatabase db = this.getReadableDatabase();
 	    Cursor cursor = db.rawQuery("select * from " + TABLE_GUEST
-	    		+ " where " + COLUMN_TRIPID + "=" + tripId, null);
+	    		+ " where " + COLUMN_TRIPID + "='" + tripId + "'", null);
 
 		// loop through all query results:
 		for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {

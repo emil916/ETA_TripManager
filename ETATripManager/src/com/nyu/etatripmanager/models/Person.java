@@ -8,7 +8,7 @@ public class Person implements Parcelable {
 	// Member fields should exist here, what else do you need for a person?
 	// Please add additional fields
 	private String name;		// Full name
-	private String phone;		// Phone number
+	private String email;		// Email 
 	
 	/**
 	 * Parcelable creator. Do not modify this function.
@@ -32,7 +32,7 @@ public class Person implements Parcelable {
 	 */
 	public Person(Parcel p) {
 		name = p.readString();
-		phone = p.readString();	
+		email = p.readString();	
 	}
 	
 	/**
@@ -41,9 +41,9 @@ public class Person implements Parcelable {
 	 * @param name Add arbitrary number of arguments to
 	 * instantiate Person class based on member variables.
 	 */
-	public Person(String name, String phone) {
+	public Person(String name, String email) {
 		this.name = name;
-		this.phone = phone;
+		this.email = email;
 	}
 
 	/**
@@ -63,7 +63,7 @@ public class Person implements Parcelable {
 	public void writeToParcel(Parcel dest, int flags) {
 		// TODO - fill in here 	
 		dest.writeString(name);
-		dest.writeString(phone);
+		dest.writeString(email);
 	}
 	
 	/**
@@ -74,8 +74,40 @@ public class Person implements Parcelable {
 	public String getName() {
 		return name;
 	}
-	public String getPhone() {
-		return phone;
+	public String getEmail() {
+		return email;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((email == null) ? 0 : email.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Person other = (Person) obj;
+		if (email == null) {
+			if (other.email != null)
+				return false;
+		} else if (!email.equals(other.email))
+			return false;
+		return true;
 	}
 
 	@Override

@@ -2,13 +2,12 @@ package com.nyu.etatripmanager.ctrl;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.ListIterator;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.nyu.etatripmanager.R;
-import com.nyu.etatripmanager.models.*;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -26,7 +25,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.ContactsContract;
-import android.provider.ContactsContract.CommonDataKinds.Phone;
+import android.provider.ContactsContract.CommonDataKinds;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -36,6 +35,10 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
+
+import com.nyu.etatripmanager.R;
+import com.nyu.etatripmanager.models.Person;
+import com.nyu.etatripmanager.models.Trip;
 
 
 public class CreateTripActivity extends Activity {
@@ -53,7 +56,7 @@ public class CreateTripActivity extends Activity {
 	Button btn_pickDate, btn_pickTime;
 	private int year, month, day, hour, min;
  
-	ArrayList<Person> guests;
+	Set<Person> guests;
 	String[] locInfo;
 	Trip myTrip;
 
@@ -62,7 +65,7 @@ public class CreateTripActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_create_trip);
 		// TODO - fill in here
-		guests = new ArrayList<Person>();
+		guests = new HashSet<Person>();
 
 		tv_guests = (TextView) findViewById(R.id.tv_ct_guests);
 		tv_loc = (TextView) findViewById(R.id.tv_ct_loc);
@@ -209,6 +212,10 @@ public class CreateTripActivity extends Activity {
 	 */
 	public Trip createTrip() {
 		String trip_name = edit_tripName.getText().toString();
+		String trip_email = SharedPreferenceHelper.readString(CreateTripActivity.this, 
+				SharedPreferenceHelper.TRIP_CREATOR_EMAIL, "");
+		if(trip_email == "")
+			return null;
 		
 		Person[] guests_arr = (Person[])guests.toArray(new Person[guests.size()]);
 
@@ -220,7 +227,7 @@ public class CreateTripActivity extends Activity {
 		Calendar calendar = Calendar.getInstance();
 		calendar.set(year, month, day, hour, min);
 		long trip_date = calendar.getTimeInMillis();
-		Trip trip = new Trip(0, trip_name, locInfo, trip_date, guests_arr);
+		Trip trip = new Trip("", trip_name, trip_email, locInfo, trip_date, guests_arr);
 
 		return trip;
 	}
@@ -238,7 +245,8 @@ public class CreateTripActivity extends Activity {
 			// Get the URI that points to the selected contact
 			Uri contactUri = data.getData();
 			// We need the two columns, because there will be only two rows in the result
-			String[] projection = { Phone.DISPLAY_NAME, Phone.NUMBER };
+			String[] projection = { ContactsContract.Contacts.DISPLAY_NAME, 
+					CommonDataKinds.Email.ADDRESS };
 
 			/*
 			 * Perform the query on the contact to get the DISPLAY_NAME and
@@ -252,13 +260,15 @@ public class CreateTripActivity extends Activity {
 					null, null, null);
 			cursor.moveToFirst();
 
-			// Retrieve the phone number from the NUMBER column
-			int column = cursor.getColumnIndex(Phone.DISPLAY_NAME);
+			// Retrieve the email from the EMAIL column
+			int column = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
 			String name = cursor.getString(column);
-			column = cursor.getColumnIndex(Phone.NUMBER);
-			String number = cursor.getString(column);
+			column = cursor.getColumnIndex(CommonDataKinds.Email.ADDRESS);
+			String email = cursor.getString(column);
 
-			guests.add(new Person(name, number));
+			if (!guests.add(new Person(name, email)))
+				Toast.makeText(this, "Contact already added",
+						Toast.LENGTH_SHORT).show();
 			showGuestList();
 		}
 		else if (requestCode == SEARCH_LOC_REQUEST) {
@@ -276,7 +286,7 @@ public class CreateTripActivity extends Activity {
 	 * itself each time a new guest added.
 	 */
 	private void showGuestList() {
-		ListIterator<Person> it = guests.listIterator();
+		Iterator<Person> it = guests.iterator();
 		tv_guests.setText("Guests:\n");
 		while (it.hasNext()) {
 			Person p = it.next();
@@ -320,24 +330,24 @@ public class CreateTripActivity extends Activity {
                     JSONObject jsonObj = new JSONObject(jsonResult);
                      
                     int response_code = -1;
-                    long trip_id = -1;
+                    String trip_id = null;
                     
                     if(jsonObj.has("response_code"))
                     	response_code = jsonObj.getInt("response_code");
                     if(response_code==0 && jsonObj.has("trip_id")) {
-                    	trip_id = jsonObj.getLong("trip_id");
+                    	trip_id = jsonObj.getString("trip_id");
                     	myTrip.setId(trip_id);
                     	
                     	TripDatabaseHelper trip_db = new TripDatabaseHelper(CreateTripActivity.this);
                 		
                 		// Insert trip into db
-                		long tripId = trip_db.insertTrip(myTrip);
+                		trip_db.insertTrip(myTrip);
                 		
                 		// Insert each guest into db
-                		ListIterator<Person> it = guests.listIterator();
+                		Iterator<Person> it = guests.iterator();
                 		while (it.hasNext()) {
                 			Person p = it.next();
-                			trip_db.insertGuest(tripId, p);
+                			trip_db.insertGuest(trip_id, p);
                 		}
                 		
                 		setResult(RESULT_OK);

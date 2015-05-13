@@ -17,8 +17,10 @@ import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 import com.google.android.gms.plus.Plus;
 import com.google.android.gms.plus.Plus.PlusOptions;
+import com.google.android.gms.plus.model.people.Person;
 import com.nyu.etatripmanager.R;
 import com.nyu.etatripmanager.ctrl.MainActivity;
+import com.nyu.etatripmanager.ctrl.SharedPreferenceHelper;
 
  
 public class LoginActivity extends Activity implements ConnectionCallbacks,
@@ -141,7 +143,16 @@ public class LoginActivity extends Activity implements ConnectionCallbacks,
         
         // Update the UI after signin
         showUI(false);
+        
+        Person currentPerson = Plus.PeopleApi
+                .getCurrentPerson(mGoogleApiClient);
+        String personName = currentPerson.getDisplayName();
+        String personEmail = Plus.AccountApi.getAccountName(mGoogleApiClient);
  
+        SharedPreferenceHelper.writeString(LoginActivity.this, 
+        		SharedPreferenceHelper.TRIP_CREATOR_NAME, personName);
+        SharedPreferenceHelper.writeString(LoginActivity.this, 
+        		SharedPreferenceHelper.TRIP_CREATOR_EMAIL, personEmail);
         startMainActivity();
 		finish();
     }

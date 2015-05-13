@@ -36,6 +36,9 @@
         android:layout_gravity="start"
         tools:layout="@layout/fragment_navigation_drawer" />
 
+    <ScrollView 
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" >
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -117,4 +120,5 @@
             android:layout_below="@+id/tv_main_lat"
             android:textAppearance="?android:attr/textAppearanceSmall" />
     </RelativeLayout>
+    </ScrollView>
 </android.support.v4.widget.DrawerLayout>
