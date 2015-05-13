@@ -16,6 +16,8 @@ public class SharedPreferenceHelper{
 	
 	public static final String ACTIVE_TRIP_ID = "activeTripID";
 	public static final String I_ARRIVED = "I_arrived";
+	
+//	public static final String SIGNED_IN = "SIGNED_IN";
 
 	public static void writeBoolean(Context context, String key, boolean value) {
 		getEditor(context).putBoolean(key, value).commit();

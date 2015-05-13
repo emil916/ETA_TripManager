@@ -5,9 +5,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.nyu.etatripmanager.R;
-import com.nyu.etatripmanager.models.*;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -31,11 +28,15 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.nyu.etatripmanager.R;
+import com.nyu.etatripmanager.login.SessionActivity;
+import com.nyu.etatripmanager.models.Trip;
 
 public class MainActivity extends ActionBarActivity implements
 		NavigationDrawerFragment.NavigationDrawerCallbacks {
@@ -55,11 +56,14 @@ public class MainActivity extends ActionBarActivity implements
 	private static final String TAG = "MainActivity";
 	LocationManager locationManager;
 	MyLocationListener mylistener;
+	boolean locRequested = false;
 	private Button btn_go_create_trip, btn_go_view_trip, btn_delete_all_trips;
 	TextView tv_activeTripInfo, tv_lat, tv_long;
 	private final int CreateTripRequest = 1;
 	private final int ViewTripRequest = 2;
-	private final int REFRESH_INTERVAL = 3000; // 3s
+	private final int SessionActRequest = 3;
+	private final int RESULT_LOGGED_OUT = 100;
+	private final int REFRESH_INTERVAL = 10*000; // 10sec
 	Trip active_trip = null;
 	AsyncTask<String, Void, String[]> asyncTask;
 	double lat_info = 0.0, long_info = 0.0;
@@ -450,14 +454,15 @@ private class PostToServerTask extends AsyncTask <String, Void, String[]>{
 		  String provider = locationManager.getBestProvider(criteria, false);
 	    
 		  // the last known location of this provider
-		  Location location = locationManager.getLastKnownLocation(provider);		  
+		  Location location = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);		  
 	
 		  if (location != null) {
 			  mylistener.onLocationChanged(location);
-		  } else {
+		  } else if(!locRequested){
 			  // leads to the settings because there is no last known location
 			  Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
 			  startActivity(intent);
+			  locRequested = true;
 		  }
 		  // location updates: at least 5 meter and 10secs change
 		  locationManager.requestLocationUpdates(provider, 10000, 5, mylistener);
@@ -483,15 +488,23 @@ private class PostToServerTask extends AsyncTask <String, Void, String[]>{
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		if (requestCode == CreateTripRequest) {
+		switch (requestCode) {
+		case CreateTripRequest:
 			if(resultCode == RESULT_CANCELED)
 				Toast.makeText(this, "Trip canceled", Toast.LENGTH_SHORT).show();
 			else if (resultCode == RESULT_OK) {
 				Toast.makeText(this, "Trip created successfully", 
 				Toast.LENGTH_LONG).show();
 			}
-		} else if (requestCode == ViewTripRequest) {
-			// do nothing for this one
+			break;
+		case ViewTripRequest:
+			break;
+		case SessionActRequest:
+			if(resultCode == RESULT_LOGGED_OUT){
+				finish();
+			}
+		default:
+			break;
 		}
 			
 	}
@@ -547,6 +560,8 @@ private class PostToServerTask extends AsyncTask <String, Void, String[]>{
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
 		if (id == R.id.action_settings) {
+			Intent intent = new Intent(this, SessionActivity.class);
+			startActivityForResult(intent, SessionActRequest);
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
