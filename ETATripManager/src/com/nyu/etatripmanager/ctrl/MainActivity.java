@@ -35,6 +35,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.nyu.etatripmanager.R;
+import com.nyu.etatripmanager.login.LoginActivity;
 import com.nyu.etatripmanager.login.SessionActivity;
 import com.nyu.etatripmanager.models.Person;
 import com.nyu.etatripmanager.models.Trip;
@@ -523,6 +524,8 @@ private class PostToServerTask extends AsyncTask <String, Void, String[]>{
 			break;
 		case SessionActRequest:
 			if(resultCode == RESULT_LOGGED_OUT){
+				Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+				startActivity(intent);
 				finish();
 			}
 		default:

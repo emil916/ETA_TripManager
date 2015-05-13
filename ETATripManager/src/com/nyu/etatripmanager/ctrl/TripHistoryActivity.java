@@ -28,7 +28,6 @@ public class TripHistoryActivity extends ListActivity {
 		super.onCreate(savedInstanceState);
 
 		// Get all the trips from the database
-		tripList = new ArrayList<Trip>();
 		TripDatabaseHelper trip_db = new TripDatabaseHelper(TripHistoryActivity.this);
 		tripList = trip_db.getAllTrips();
 		trip_db.close();

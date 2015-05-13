@@ -52,7 +52,7 @@ public class ViewTripActivity extends Activity {
 				ViewTripActivity.this, SharedPreferenceHelper.I_ARRIVED, false);
 				
 		
-		if(trip_id.equals(cur_trip.getId())){
+		if(trip_id != null && trip_id.equals(cur_trip.getId())){
 			btn_startTrip.setEnabled(false);
 			btn_stopTrip.setEnabled(true);
 			
