@@ -99,6 +99,7 @@ public class Trip implements Parcelable {
 
         JSONObject json = new JSONObject();
         json.put("command", HttpRequestHelper.JSON_CREATE_TRIP);
+        json.put("tripname", this.name);
         json.put("email", trip_creator);
         json.put("location", new JSONArray(locList));
         json.put("datetime", date);

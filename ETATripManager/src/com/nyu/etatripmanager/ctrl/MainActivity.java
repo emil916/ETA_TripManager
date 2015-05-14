@@ -376,7 +376,7 @@ private class PostToServerTask extends AsyncTask <String, Void, String[]>{
 						JSONArray j_people_arr = jsonTripStatusResultObj.getJSONArray("people");
 						int suggested_time = jsonTripStatusResultObj.getInt("suggested_time_to_leave");
 						
-						
+						suggested_time = suggested_time/60;	//in minutes
 						
 						StringBuilder sb = new StringBuilder();
 						sb.append("Active trip: ").append(active_trip.getName())
@@ -402,10 +402,10 @@ private class PostToServerTask extends AsyncTask <String, Void, String[]>{
 							
 							sb.append("\n" + Integer.toString(i+1)+". Guest name: " + person.getName())
 							.append("\n   - Guest email: " + person.getEmail())
-							.append("\n   - Distance left: " + distance_left + "mls.")
-							.append("\n   - Time left: " + time_left + "min.")
-							.append("\n   - Suggested time to leave: after " + suggested_time + "min.");
+							.append("\n   - Distance left: " + distance_left)
+							.append("\n   - Time left: " + time_left);
 						}
+						sb.append("\nSuggested time to leave: after " + suggested_time + " minutes");
 						
 						if (!isArrived) {
 							JSONObject jsonUpdateLocationResultObj = new JSONObject(jsonUpdateLocationResultStr);
@@ -413,9 +413,13 @@ private class PostToServerTask extends AsyncTask <String, Void, String[]>{
 							if (jsonUpdateLocationResultObj.has("response_code"))
 								response_code = jsonUpdateLocationResultObj.getInt("response_code");
 							if (response_code == 0) {
-								sb.append("\n\n <Updated your location successfuly>");
-								tv_lat.setText("Lat: " + Double.toString(lat_info));
-								tv_long.setText("Long: " + Double.toString(long_info));
+								Toast.makeText(MainActivity.this,
+										"Updated your location successfuly: " + "Lat: " + Double.toString(lat_info) +
+										"Long: " + Double.toString(long_info),
+										Toast.LENGTH_SHORT).show();
+								//sb.append("\n\n <Updated your location successfuly>");
+								//tv_lat.setText("Lat: " + Double.toString(lat_info));
+								//tv_long.setText("Long: " + Double.toString(long_info));
 							}
 						} else {
 							sb.append("\n\n <You have arrived at the destination>");
@@ -491,6 +495,7 @@ boolean isArrived;
 					for (int i = 0; i < j_trips_arr.length(); i++) {
 						JSONObject j_trip = (JSONObject)j_trips_arr.get(i);
 						String trip_id = j_trip.getString("id");
+						String trip_name = j_trip.getString("tripname");
 						String email = j_trip.getString("email");
 						long timestamp = j_trip.getLong("datetime");
 						JSONArray j_loc_arr = j_trip.getJSONArray("location");
@@ -510,7 +515,7 @@ boolean isArrived;
 							people[j] = new Person(p_name, p_email);
 						}
 						
-						String trip_name = "ImportedTrip #" + (i+1);
+						//String trip_name = "ImportedTrip #" + (i+1);
 						Trip new_trip = new Trip(trip_id, trip_name, email, loc, 
 								timestamp, people);
 						
