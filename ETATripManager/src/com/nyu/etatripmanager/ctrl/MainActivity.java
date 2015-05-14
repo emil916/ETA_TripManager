@@ -65,7 +65,7 @@ public class MainActivity extends ActionBarActivity implements
 	private final int ViewTripRequest = 2;
 	private final int SessionActRequest = 3;
 	public static final int RESULT_LOGGED_OUT = 100;
-	private final int REFRESH_INTERVAL = 10*000; // 10sec
+	private final int REFRESH_INTERVAL = 10*1000; // 10sec
 	Trip active_trip = null;
 	AsyncTask<String, Void, String[]> asyncTask;
 	double lat_info = 0.0, long_info = 0.0;
@@ -322,6 +322,10 @@ private class PostToServerTask extends AsyncTask <String, Void, String[]>{
 				jsonTripStatusObj.put("command", HttpRequestHelper.JSON_TRIP_STATUS);
 				jsonTripStatusObj.put("trip_id", active_trip.getId());
 				
+				String trip_creator_email = SharedPreferenceHelper.readString(MainActivity.this, 
+						SharedPreferenceHelper.TRIP_CREATOR_EMAIL, null);
+				jsonTripStatusObj.put("email", trip_creator_email);
+				
 				jsonTripStatusResultStr = HttpRequestHelper.makeServiceCall(
 						 HttpRequestHelper.URL, HttpRequestHelper.POST, jsonTripStatusObj);
 				
@@ -333,6 +337,7 @@ private class PostToServerTask extends AsyncTask <String, Void, String[]>{
 					jsonUpdateLocationObj.put("command", HttpRequestHelper.JSON_UPDATE_LOCATION);
 					jsonUpdateLocationObj.put("latitude", lat_info);
 					jsonUpdateLocationObj.put("longitude", long_info);
+					jsonUpdateLocationObj.put("email",  trip_creator_email);
 					jsonUpdateLocationObj.put("datetime",System.currentTimeMillis());
 					
 //					if(isArrived = SharedPreferenceHelper.readBoolean(
@@ -381,10 +386,10 @@ private class PostToServerTask extends AsyncTask <String, Void, String[]>{
 						for (int i=0; i<j_people_arr.length(); i++) {
 							JSONObject j_person = (JSONObject)j_people_arr.get(i);
 							String email = j_person.getString("email");
-							Double distance_left = j_person.getDouble("distance_left");
+							String distance_left = j_person.getString("distance_left");
 							Double lat = j_person.getDouble("latitude");
 							Double lng = j_person.getDouble("longitude");
-							int time_left = j_person.getInt("time_left");
+							String time_left = j_person.getString("time_left");
 							long timestamp = j_person.getLong("datetime");
 							
 							Person person = trip_db.getPerson(active_trip.getId(), email);
@@ -431,7 +436,7 @@ private class PostToServerTask extends AsyncTask <String, Void, String[]>{
 	}
 	}
 
-	private class MyLocationListener implements LocationListener {
+private class MyLocationListener implements LocationListener {
 
 		@Override
 		public void onLocationChanged(Location location) {
@@ -464,7 +469,7 @@ private class PostToServerTask extends AsyncTask <String, Void, String[]>{
 //					"Provider " + provider + " disabled!", Toast.LENGTH_SHORT)
 //					.show();
 		}
-	}
+}
 
 	private void setLocationStuff(boolean switchState) {		
 		if(switchState) {
@@ -488,7 +493,7 @@ private class PostToServerTask extends AsyncTask <String, Void, String[]>{
 			  locRequested = true;
 		  }
 		  // location updates: at least 5 meter and 10secs change
-		  locationManager.requestLocationUpdates(provider, 10000, 5, mylistener);
+		  locationManager.requestLocationUpdates(provider, REFRESH_INTERVAL, 5, mylistener);
 		} else {
 			locationManager.removeUpdates(mylistener);
 		}

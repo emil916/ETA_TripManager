@@ -48,17 +48,7 @@ public class LoginActivity extends Activity implements ConnectionCallbacks,
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
- 
-        btnSignIn = (SignInButton) findViewById(R.id.btn_sign_in);
- 
-        btnSignIn.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				signInWithGplus();
-			}
-		});
+        
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
@@ -113,7 +103,7 @@ public class LoginActivity extends Activity implements ConnectionCallbacks,
                 resolveSignInError();
             } else {
             	// Update the UI
-            	showUI(true);
+            	loadUI(true);
             }
         }
         
@@ -142,7 +132,7 @@ public class LoginActivity extends Activity implements ConnectionCallbacks,
         Toast.makeText(this, "User is connected!", Toast.LENGTH_LONG).show();   
         
         // Update the UI after signin
-        showUI(false);
+//        showUI(false);
         
         Person currentPerson = Plus.PeopleApi
                 .getCurrentPerson(mGoogleApiClient);
@@ -160,8 +150,19 @@ public class LoginActivity extends Activity implements ConnectionCallbacks,
     /**
      * Updating the UI, showing/hiding buttons and profile layout
      * */
-    private void showUI(boolean isSignedIn) {
-        if (isSignedIn) {
+    private void loadUI(boolean check) {
+        if (check) {
+        	setContentView(R.layout.activity_login);
+        	 
+            btnSignIn = (SignInButton) findViewById(R.id.btn_sign_in);
+     
+            btnSignIn.setOnClickListener(new OnClickListener() {
+    			
+    			@Override
+    			public void onClick(View v) {
+    				signInWithGplus();
+    			}
+    		});
             btnSignIn.setVisibility(View.VISIBLE);
         } else {
             btnSignIn.setVisibility(View.GONE);
@@ -172,7 +173,7 @@ public class LoginActivity extends Activity implements ConnectionCallbacks,
     @Override
     public void onConnectionSuspended(int arg0) {
         mGoogleApiClient.connect();
-        showUI(true);
+        loadUI(true);
     }
  
     @Override

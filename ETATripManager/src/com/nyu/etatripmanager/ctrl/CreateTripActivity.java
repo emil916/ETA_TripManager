@@ -212,10 +212,16 @@ public class CreateTripActivity extends Activity {
 	 */
 	public Trip createTrip() {
 		String trip_name = edit_tripName.getText().toString();
-		String trip_email = SharedPreferenceHelper.readString(CreateTripActivity.this, 
-				SharedPreferenceHelper.TRIP_CREATOR_EMAIL, "");
-		if(trip_email == "")
+		String trip_creator_name = SharedPreferenceHelper.readString(CreateTripActivity.this, 
+				SharedPreferenceHelper.TRIP_CREATOR_NAME, null);
+		String trip_creator_email = SharedPreferenceHelper.readString(CreateTripActivity.this, 
+				SharedPreferenceHelper.TRIP_CREATOR_EMAIL, null);
+		if(trip_creator_name == null || trip_creator_email == null)
 			return null;
+		
+		// Add the creator to the guests
+		Person p_creator = new Person(trip_creator_name, trip_creator_email);
+		guests.add(p_creator);
 		
 		Person[] guests_arr = (Person[])guests.toArray(new Person[guests.size()]);
 
@@ -227,7 +233,7 @@ public class CreateTripActivity extends Activity {
 		Calendar calendar = Calendar.getInstance();
 		calendar.set(year, month, day, hour, min);
 		long trip_date = calendar.getTimeInMillis();
-		Trip trip = new Trip("", trip_name, trip_email, locInfo, trip_date, guests_arr);
+		Trip trip = new Trip("", trip_name, trip_creator_email, locInfo, trip_date, guests_arr);
 
 		return trip;
 	}
