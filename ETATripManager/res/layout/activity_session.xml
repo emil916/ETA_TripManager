@@ -11,10 +11,11 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="20dp"
+        android:layout_marginTop="35dp"
         android:orientation="horizontal"
-        android:weightSum="3">
+        android:weightSum="3" >
  
-        <ImageView
+        <com.nyu.etatripmanager.login.RoundedImageView
             android:id="@+id/imgProfilePic"
             android:layout_width="80dp"
             android:layout_height="wrap_content"
@@ -24,8 +25,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
-            android:orientation="vertical"
-            android:layout_weight="2" >
+            android:layout_weight="2"
+            android:orientation="vertical" >
  
             <TextView
                 android:id="@+id/txtName"
@@ -43,19 +44,19 @@
         </LinearLayout>
     </LinearLayout>
  
-
- 
     <Button
         android:id="@+id/btn_sign_out"
+        style="@style/myBtnStyleOrange"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="@string/btn_logout_from_google"
-        android:layout_marginBottom="10dp"/>
+        android:layout_marginBottom="10dp"
+        android:text="@string/btn_logout_from_google" />
  
     <Button
         android:id="@+id/btn_revoke_access"
+        style="@style/myBtnStyleOrange"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="@string/btn_revoke_access"/>
+        android:text="@string/btn_revoke_access" />
  
 </LinearLayout>

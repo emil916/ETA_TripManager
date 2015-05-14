@@ -129,7 +129,7 @@ public class LoginActivity extends Activity implements ConnectionCallbacks,
     @Override
     public void onConnected(Bundle arg0) {
         mSignInClicked = false;
-        Toast.makeText(this, "User is connected!", Toast.LENGTH_LONG).show();   
+        Toast.makeText(this, "You are connected", Toast.LENGTH_LONG).show();   
         
         // Update the UI after signin
 //        showUI(false);

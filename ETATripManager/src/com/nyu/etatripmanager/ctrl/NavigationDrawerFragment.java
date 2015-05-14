@@ -197,7 +197,7 @@ public class NavigationDrawerFragment extends Fragment {
 		// them to the drawer,
 		// per the navigation drawer design guidelines.
 		if (!mUserLearnedDrawer && !mFromSavedInstanceState) {
-			mDrawerLayout.openDrawer(mFragmentContainerView);
+//			mDrawerLayout.openDrawer(mFragmentContainerView);
 		}
 
 		// Defer code dependent on restoration of previous instance state.
@@ -273,9 +273,9 @@ public class NavigationDrawerFragment extends Fragment {
 			return true;
 		}
 
-		if (item.getItemId() == R.id.action_example) {
-			Toast.makeText(getActivity(), "Example action.", Toast.LENGTH_SHORT)
-					.show();
+		if (item.getItemId() == R.id.action_sync_trips) {
+//			Toast.makeText(getActivity(), "Example action.", Toast.LENGTH_SHORT)
+//					.show();
 			return true;
 		}
 

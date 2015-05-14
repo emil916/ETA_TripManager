@@ -9,10 +9,12 @@
 
         <Button
             android:id="@+id/button_ct_inviteFriends"
+            style="@style/myBtnStyleOrange"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_alignParentTop="true"
+            android:layout_marginBottom="5dp"
             android:layout_marginLeft="14dp"
             android:layout_marginTop="17dp"
             android:text="@string/btn_add_guest" />
@@ -103,26 +105,29 @@
 
         <Button
             android:id="@+id/button_ct_createTrip"
+            style="@style/myBtnStyleOrange"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/tv_ct_time"
             android:layout_marginTop="14dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="14dp"
             android:layout_toRightOf="@+id/textView6"
             android:text="@string/btn_create_this_trip" />
 
         <Button
             android:id="@+id/button_ct_cancelTrip"
+            style="@style/myBtnStyleOrange"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignLeft="@+id/textView6"
             android:layout_below="@+id/tv_ct_time"
             android:layout_marginTop="14dp"
-            android:layout_toLeftOf="@+id/button_ct_createTrip"
             android:text="@string/btn_cancel_trip" />
 
         <Button
             android:id="@+id/button_ct_pickDate"
-            style="?android:attr/buttonStyleSmall"
+            style="@style/myBtnStyleOrange"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignLeft="@+id/textView6"
@@ -131,7 +136,7 @@
 
         <Button
             android:id="@+id/button_ct_pickTime"
-            style="?android:attr/buttonStyleSmall"
+            style="@style/myBtnStyleOrange"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignTop="@+id/button_ct_pickDate"

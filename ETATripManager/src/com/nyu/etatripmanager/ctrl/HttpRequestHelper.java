@@ -26,6 +26,7 @@ public class HttpRequestHelper {
     public static final String JSON_CREATE_TRIP = "CREATE_TRIP";
     public static final String JSON_UPDATE_LOCATION = "UPDATE_LOCATION";
     public static final String JSON_TRIP_STATUS = "TRIP_STATUS";
+    public static final String JSON_TRIP_SYNC = "TRIP_SYNC";
     
     public HttpRequestHelper() {	 
     }

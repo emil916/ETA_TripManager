@@ -3,18 +3,28 @@ package com.nyu.etatripmanager.login;
 import java.io.InputStream;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.PorterDuff.Mode;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,6 +40,7 @@ import com.google.android.gms.plus.Plus.PlusOptions;
 import com.google.android.gms.plus.model.people.Person;
 import com.nyu.etatripmanager.R;
 import com.nyu.etatripmanager.ctrl.MainActivity;
+import com.nyu.etatripmanager.ctrl.SharedPreferenceHelper;
 
  
 public class SessionActivity extends Activity implements OnClickListener,
@@ -56,7 +67,7 @@ public class SessionActivity extends Activity implements OnClickListener,
     private ConnectionResult mConnectionResult;
  
     private Button btnSignOut, btnRevokeAccess;
-    private ImageView imgProfilePic;
+    private RoundedImageView imgProfilePic;
     private TextView txtName, txtEmail;
     
     @Override
@@ -66,7 +77,7 @@ public class SessionActivity extends Activity implements OnClickListener,
  
         btnSignOut = (Button) findViewById(R.id.btn_sign_out);
         btnRevokeAccess = (Button) findViewById(R.id.btn_revoke_access);
-        imgProfilePic = (ImageView) findViewById(R.id.imgProfilePic);
+        imgProfilePic = (RoundedImageView) findViewById(R.id.imgProfilePic);
         txtName = (TextView) findViewById(R.id.txtName);
         txtEmail = (TextView) findViewById(R.id.txtEmail);
  
@@ -256,14 +267,14 @@ public class SessionActivity extends Activity implements OnClickListener,
                     });
         }
     }
- 
+
     /**
      * Background Async task to load user profile picture from url
      * */
     private class LoadProfileImage extends AsyncTask<String, Void, Bitmap> {
-        ImageView bmImage;
+    	RoundedImageView bmImage;
  
-        public LoadProfileImage(ImageView bmImage) {
+        public LoadProfileImage(RoundedImageView bmImage) {
             this.bmImage = bmImage;
         }
  
@@ -286,6 +297,10 @@ public class SessionActivity extends Activity implements OnClickListener,
     }
  
     private void finishSession() {
+    	SharedPreferenceHelper.removeKey(this, 
+    			SharedPreferenceHelper.TRIP_CREATOR_NAME);
+    	SharedPreferenceHelper.removeKey(this, 
+    			SharedPreferenceHelper.TRIP_CREATOR_EMAIL);
     	setResult(MainActivity.RESULT_LOGGED_OUT);
         finish();
     }

@@ -10,13 +10,17 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.ContactsContract;
+import android.provider.ContactsContract.CommonDataKinds;
 import android.provider.Settings;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -436,6 +440,136 @@ private class PostToServerTask extends AsyncTask <String, Void, String[]>{
 	}
 	}
 
+
+private class SyncWithServerTask extends AsyncTask <String, Void, String>{
+boolean isArrived;
+
+	@Override
+	protected String doInBackground(String... params) {
+    	String jsonSyncedTripsResultStr = null;
+    	
+		try {
+			JSONObject jsonTripStatusObj = new JSONObject();
+			jsonTripStatusObj.put("command", HttpRequestHelper.JSON_TRIP_SYNC);
+			
+			String trip_creator_email = SharedPreferenceHelper.readString(MainActivity.this, 
+					SharedPreferenceHelper.TRIP_CREATOR_EMAIL, null);
+			jsonTripStatusObj.put("email", trip_creator_email);
+			
+			jsonSyncedTripsResultStr = HttpRequestHelper.makeServiceCall(
+					 HttpRequestHelper.URL, HttpRequestHelper.POST, jsonTripStatusObj);
+			
+			
+			
+		} catch (JSONException e) {
+			Log.e(TAG, e.getMessage());
+		}
+		
+		return jsonSyncedTripsResultStr;
+	}
+
+	@Override
+     protected void onPostExecute(String jsonResultStr) {
+		if (jsonResultStr != null) {
+			
+			try {	
+			JSONObject jsonSyncedTripsResultObj = new JSONObject(jsonResultStr);
+
+				if (jsonSyncedTripsResultObj.has("trips")) {
+					int response_code = jsonSyncedTripsResultObj.getInt("response_code");
+					if(response_code != 0) {
+						Toast.makeText(MainActivity.this, "Could not sync trips", 
+								Toast.LENGTH_LONG).show();
+						return;
+					}
+						
+					TripDatabaseHelper trip_db = new TripDatabaseHelper(MainActivity.this);
+					
+					JSONArray j_trips_arr = jsonSyncedTripsResultObj.getJSONArray("trips");
+					int count_inserted_trips = 0;
+					
+					for (int i = 0; i < j_trips_arr.length(); i++) {
+						JSONObject j_trip = (JSONObject)j_trips_arr.get(i);
+						String trip_id = j_trip.getString("id");
+						String email = j_trip.getString("email");
+						long timestamp = j_trip.getLong("datetime");
+						JSONArray j_loc_arr = j_trip.getJSONArray("location");
+						String [] loc = new String[4];
+						
+						for (int j = 0; j < 4; j++) 
+							loc[j] = j_loc_arr.getString(j);
+						
+						JSONArray j_people_arr = j_trip.getJSONArray("people");
+//						String [] people_emails = new String[j_people_arr.length()];
+						Person [] people = new Person[j_people_arr.length()];
+						
+						for (int j = 0; j < j_people_arr.length(); j++) {
+							String p_email = j_people_arr.getString(j);
+//							people_emails[j] = j_people_arr.getString(j);
+							String p_name = getContactName(MainActivity.this, p_email);
+							people[j] = new Person(p_name, p_email);
+						}
+						
+						String trip_name = "ImportedTrip #" + (i+1);
+						Trip new_trip = new Trip(trip_id, trip_name, email, loc, 
+								timestamp, people);
+						
+							if (trip_db.insertTrip(new_trip) > 0) {
+								for (int j = 0; j < people.length; j++)
+									trip_db.insertGuest(trip_id, people[j]);
+								count_inserted_trips++;
+							}
+						
+					}
+					
+						final String result = count_inserted_trips
+								+ " new trips were synced from Server";
+						Toast.makeText(MainActivity.this, result, Toast.LENGTH_LONG).show();
+
+						trip_db.close();
+					} else {
+						Toast.makeText(MainActivity.this,
+								"Something went wrong, try again",
+								Toast.LENGTH_LONG).show();
+					}
+				} catch (JSONException e) {
+					Log.e(TAG, e.getMessage());
+				}
+
+			}
+		}
+	
+		private String getContactName(Context context, String email) {
+
+			String name = null;
+
+			// define the columns I want the query to return
+			String[] projection = new String[] {
+					CommonDataKinds.Email.CONTACT_ID,
+					ContactsContract.Contacts.DISPLAY_NAME,
+					CommonDataKinds.Email.DATA};
+
+			// encode the phone number and build the filter URI
+			Uri contactUri = Uri.withAppendedPath(
+					CommonDataKinds.Email.CONTENT_LOOKUP_URI, Uri.encode(email));
+
+			// query time
+			Cursor cursor = context.getContentResolver().query(contactUri,
+					projection, null, null, null);
+
+			if (cursor != null) {
+				if (cursor.moveToFirst())
+					name = cursor.getString(cursor
+								.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+				else 
+					name = "Unknown";
+				
+				cursor.close();
+			}
+			return name;
+		}
+}
+
 private class MyLocationListener implements LocationListener {
 
 		@Override
@@ -443,9 +577,6 @@ private class MyLocationListener implements LocationListener {
 			// Initialize the location fields
 			lat_info = location.getLatitude();
 			long_info = location.getLongitude();
-
-//			Toast.makeText(MainActivity.this, "Location changed!",
-//					Toast.LENGTH_SHORT).show();
 		}
 
 		@Override
@@ -552,13 +683,13 @@ private class MyLocationListener implements LocationListener {
 	public void onSectionAttached(int number) {
 		switch (number) {
 		case 1:
-			mTitle = getString(R.string.title_section1);
+//			mTitle = getString(R.string.title_section1);
 			break;
 		case 2:
-			mTitle = getString(R.string.title_section2);
+//			mTitle = getString(R.string.title_section2);
 			break;
 		case 3:
-			mTitle = getString(R.string.title_section3);
+//			mTitle = getString(R.string.title_section3);
 			break;
 		}
 	}
@@ -594,7 +725,11 @@ private class MyLocationListener implements LocationListener {
 			Intent intent = new Intent(this, SessionActivity.class);
 			startActivityForResult(intent, SessionActRequest);
 			return true;
+		} else if(id == R.id.action_sync_trips) {
+			new SyncWithServerTask().execute(HttpRequestHelper.URL);
 		}
+		
+		
 		return super.onOptionsItemSelected(item);
 	}
 
